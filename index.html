@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tostaduría Andina · Pedidos offline con IndexedDB + Outbox</title>
+  <meta name="description" content="Demo académica de persistencia offline con IndexedDB, patrón Outbox y Background Sync en JavaScript Vanilla.">
+  <meta name="theme-color" content="#0a0f1a">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <div class="brand">
+        <img class="brand__mark" src="./icons/icon.svg" alt="" width="34" height="34">
+        <div>
+          <p class="brand__name">Tostaduría Andina</p>
+          <p class="brand__sub">Panel de pedidos offline</p>
+        </div>
+      </div>
+
+      <div class="status-bar" role="status" aria-live="polite">
+        <span id="pill-connection" class="pill pill--neutral">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <span id="pill-connection-text">Comprobando…</span>
+        </span>
+        <span id="pill-worker" class="pill pill--neutral">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <span id="pill-worker-text">Service Worker…</span>
+        </span>
+        <span id="pill-strategy" class="pill pill--neutral">
+          <span class="pill__dot" aria-hidden="true"></span>
+          <span id="pill-strategy-text">Estrategia…</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Temas 5.1 · 5.2 · 5.3</p>
+        <h1>Pedidos que nunca se pierden</h1>
+        <p class="hero__lead">
+          IndexedDB guarda cada pedido en una cola local. El Service Worker la vacía en segundo plano
+          con Background Sync y reporta el resultado a la interfaz con <code>postMessage</code>.
+          Cien por ciento JavaScript Vanilla.
+        </p>
+      </div>
+      <ul class="hero__chips" aria-label="Tecnologías usadas">
+        <li>IndexedDB</li>
+        <li>Patrón Outbox</li>
+        <li>Background Sync</li>
+      </ul>
+    </section>
+
+    <section class="stats" aria-label="Resumen de la cola">
+      <article class="stat">
+        <p class="stat__label">Total en cola</p>
+        <p class="stat__value" id="stat-total">0</p>
+        <p class="stat__hint">registros en IndexedDB</p>
+      </article>
+      <article class="stat stat--pending">
+        <p class="stat__label">Pendientes</p>
+        <p class="stat__value" id="stat-pending">0</p>
+        <p class="stat__hint">esperando envío</p>
+      </article>
+      <article class="stat stat--sent">
+        <p class="stat__label">Enviados</p>
+        <p class="stat__value" id="stat-sent">0</p>
+        <p class="stat__hint">confirmados por el servidor</p>
+      </article>
+      <article class="stat stat--error">
+        <p class="stat__label">Con error</p>
+        <p class="stat__value" id="stat-error">0</p>
+        <p class="stat__hint">revisar y reintentar</p>
+      </article>
+    </section>
+
+    <div class="layout">
+      <section class="card form-card" aria-labelledby="form-title">
+        <header class="card__head">
+          <div>
+            <h2 id="form-title">Nuevo pedido</h2>
+            <p class="card__sub">Primero se guarda localmente. Después se intenta enviar.</p>
+          </div>
+          <span class="tag">Offline-first</span>
+        </header>
+
+        <form id="order-form" novalidate>
+          <div class="field">
+            <label for="cliente">Cliente</label>
+            <input id="cliente" name="cliente" type="text" placeholder="Ej. María Quispe"
+                   maxlength="60" autocomplete="name" required>
+            <p class="field__error" id="error-cliente" hidden>Escribe el nombre del cliente.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="producto">Producto</label>
+              <select id="producto" name="producto" required>
+                <option value="">Selecciona…</option>
+                <option>Café de altura 500 g</option>
+                <option>Café descafeinado 500 g</option>
+                <option>Filtro V60</option>
+                <option>Prensa francesa</option>
+                <option>Molino manual</option>
+                <option>Taza de cerámica</option>
+              </select>
+              <p class="field__error" id="error-producto" hidden>Selecciona un producto.</p>
+            </div>
+            <div class="field">
+              <label for="cantidad">Cantidad</label>
+              <input id="cantidad" name="cantidad" type="number" min="1" max="99" value="1"
+                     inputmode="numeric" required>
+              <p class="field__error" id="error-cantidad" hidden>Usa un número entre 1 y 99.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="notas">Notas <span class="muted">(opcional)</span></label>
+            <textarea id="notas" name="notas" rows="3" maxlength="240"
+                      placeholder="Dirección, referencia, horario de entrega…"></textarea>
+          </div>
+
+          <div class="form__footer">
+            <button type="submit" class="btn btn--primary" id="submit-btn">
+              <span class="btn__spinner" aria-hidden="true"></span>
+              <span class="btn__label">Guardar pedido</span>
+            </button>
+            <p class="form__hint">
+              El pedido entra como <strong>pendiente</strong> y se sincroniza solo cuando hay red.
+            </p>
+          </div>
+        </form>
+      </section>
+
+      <section class="card queue-card" aria-labelledby="queue-title">
+        <header class="card__head card__head--stack">
+          <div>
+            <h2 id="queue-title">Cola Outbox</h2>
+            <p class="card__sub">Estado real de la base <code>outbox-db</code>.</p>
+          </div>
+          <div class="queue-actions">
+            <button type="button" class="btn btn--primary btn--sm" id="btn-sync">Sincronizar ahora</button>
+            <button type="button" class="btn btn--ghost btn--sm" id="btn-purge">Purgar enviados</button>
+            <button type="button" class="btn btn--ghost btn--sm btn--danger" id="btn-clear">Vaciar todo</button>
+          </div>
+        </header>
+
+        <div class="toolbar">
+          <label class="switch" for="demo-offline">
+            <input type="checkbox" id="demo-offline">
+            <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+            <span class="switch__text">Simular caída de red <span class="muted">(demo)</span></span>
+          </label>
+          <span class="toolbar__state" id="sync-state">En espera</span>
+        </div>
+
+        <div id="outbox-list" class="records"></div>
+
+        <div id="outbox-empty" class="empty">
+          <p class="empty__icon" aria-hidden="true">☕</p>
+          <p class="empty__title">La cola está vacía</p>
+          <p class="empty__text">
+            Crea un pedido con el formulario. Si no hay red, quedará aquí como <strong>pendiente</strong>.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <section class="card log-card" aria-labelledby="log-title">
+      <header class="card__head">
+        <div>
+          <h2 id="log-title">Registro de actividad</h2>
+          <p class="card__sub">Eventos de la página y mensajes recibidos del Service Worker.</p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" id="btn-clear-log">Limpiar</button>
+      </header>
+      <ol id="activity-log" class="log" aria-live="polite"></ol>
+    </section>
+
+    <section class="card guide-card" aria-labelledby="guide-title">
+      <h2 id="guide-title">Cómo probarlo en 4 pasos</h2>
+      <ol class="steps">
+        <li>
+          <span class="steps__num">1</span>
+          <p>Abre DevTools → <strong>Application</strong> → <strong>IndexedDB</strong> → <code>outbox-db</code> → <code>outbox</code>.</p>
+        </li>
+        <li>
+          <span class="steps__num">2</span>
+          <p>En <strong>Network</strong> elige <em>Offline</em> o activa el interruptor “Simular caída de red”.</p>
+        </li>
+        <li>
+          <span class="steps__num">3</span>
+          <p>Crea pedidos: verás registros <strong>pendientes</strong> con su payload completo.</p>
+        </li>
+        <li>
+          <span class="steps__num">4</span>
+          <p>Vuelve a <em>Online</em> y pulsa <strong>Sincronizar ahora</strong>. El SW envía y la UI se actualiza por <code>postMessage</code>.</p>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p>Proyecto académico · JavaScript Vanilla · IndexedDB + Outbox + Background Sync</p>
+      <p class="muted">Sin PouchDB, Dexie, idb ni Workbox.</p>
+    </div>
+  </footer>
+
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/db-helper.js"></script>
+  <script src="./js/outbox-repo.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

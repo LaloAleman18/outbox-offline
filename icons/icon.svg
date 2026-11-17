@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Taza de café con flechas de sincronización">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f2236"/>
+      <stop offset="1" stop-color="#07101c"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#67d7ff"/>
+      <stop offset="1" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd166"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="248" r="168" fill="none" stroke="#1c3552" stroke-width="10"/>
+
+  <!-- taza -->
+  <path d="M170 232h172v64a64 64 0 0 1-64 64h-44a64 64 0 0 1-64-64z" fill="url(#warm)"/>
+  <path d="M342 248h18a40 40 0 0 1 0 80h-18" fill="none" stroke="#f59e0b" stroke-width="20" stroke-linecap="round"/>
+  <rect x="156" y="352" width="200" height="20" rx="10" fill="#f59e0b"/>
+
+  <!-- vapor -->
+  <path d="M216 196c-14-18 14-30 0-50" fill="none" stroke="#67d7ff" stroke-width="14" stroke-linecap="round"/>
+  <path d="M256 188c-14-18 14-30 0-50" fill="none" stroke="#67d7ff" stroke-width="14" stroke-linecap="round"/>
+  <path d="M296 196c-14-18 14-30 0-50" fill="none" stroke="#67d7ff" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- flechas de sincronización -->
+  <path d="M96 132a132 132 0 0 1 100-52" fill="none" stroke="url(#accent)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M96 132l6-46M96 132l46 2" fill="none" stroke="#67d7ff" stroke-width="18" stroke-linecap="round"/>
+
+  <path d="M416 380a132 132 0 0 1-100 52" fill="none" stroke="url(#accent)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M416 380l-6 46M416 380l-46-2" fill="none" stroke="#67d7ff" stroke-width="18" stroke-linecap="round"/>
+</svg>
