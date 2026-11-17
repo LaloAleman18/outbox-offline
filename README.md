@@ -1,6 +1,6 @@
 # Tostaduría Andina · Pedidos offline
 
-Aplicación académica de **persistencia offline** con IndexedDB, **patrón Outbox** y **Background Sync**, construida con JavaScript Vanilla y sin dependencias de terceros.
+Aplicación académica de **persistencia offline** con IndexedDB, **patrón Outbox** y **Background Sync**, construida con JavaScript Vanilla (sin librerías de JavaScript). Bootstrap 5.3 se usa únicamente como hoja de estilos, guardada en `vendor/` para que también funcione sin conexión.
 
 > Temas 5.1, 5.2 y 5.3 · Entrega: enlace de GitHub Pages + repositorio.
 
@@ -29,7 +29,7 @@ Aplicación académica de **persistencia offline** con IndexedDB, **patrón Outb
 
 | Regla | Cómo se cumple |
 | --- | --- |
-| 100 % JavaScript Vanilla | No hay PouchDB, Dexie, idb, Workbox ni ninguna librería. Cero dependencias en el cliente. |
+| 100 % JavaScript Vanilla | Toda la lógica (IndexedDB, Outbox y sincronización) está escrita a mano: no hay PouchDB, Dexie, idb, Workbox ni librerías JS. Bootstrap 5.3 se usa solo como CSS y se sirve localmente desde `vendor/`. |
 | Cero azúcar sintáctico de funciones asíncronas | Toda la asincronía usa `new Promise()`, `.then()`, `.catch()` y `Promise.all()`. El código no declara funciones con la sintaxis moderna ni usa la palabra clave de espera. |
 | Código ensamblado y comprendido | Módulos separados por responsabilidad, comentados y con documentación de defensa en [`DEFENSA.md`](./DEFENSA.md). |
 | Rutas relativas | Todos los `src`, `href`, `importScripts` y el scope usan `./` para funcionar en subdirectorios de GitHub Pages. |
@@ -41,10 +41,12 @@ Aplicación académica de **persistencia offline** con IndexedDB, **patrón Outb
 ```text
 .
 ├── index.html              Interfaz (formulario, cola, métricas, log)
-├── styles.css              Diseño responsive sin fuentes externas
+├── styles.css              Ajustes de marca sobre Bootstrap
 ├── sw.js                   Service Worker: caché + motor de sincronización
 ├── manifest.json           Metadatos PWA
 ├── .nojekyll               Evita el procesamiento de Jekyll en GitHub Pages
+├── vendor/
+│   └── bootstrap.min.css   Bootstrap 5.3 local (solo estilos, sin JS)
 ├── icons/
 │   ├── icon.svg
 │   ├── icon-192.png

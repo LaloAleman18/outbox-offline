@@ -56,7 +56,7 @@
     renderConnectivity();
     renderStrategy();
     renderSyncState();
-    log('Aplicación iniciada · JavaScript Vanilla, sin dependencias.', 'info');
+    log('Aplicación iniciada · JavaScript Vanilla para la lógica.', 'info');
 
     if (!global.DB || !global.Outbox) {
       log('No se cargaron los módulos de IndexedDB.', 'error');
@@ -215,7 +215,7 @@
     ok = markField(dom.cantidad, dom.errorCantidad, cantidadOk) && ok;
 
     if (!ok) {
-      var firstInvalid = dom.form.querySelector('.field.is-invalid input, .field.is-invalid select');
+      var firstInvalid = dom.form.querySelector('.is-invalid');
       if (firstInvalid) {
         firstInvalid.focus();
       }
@@ -225,10 +225,7 @@
   }
 
   function markField(input, errorNode, ok) {
-    var field = input.closest('.field');
-    if (field) {
-      field.classList.toggle('is-invalid', !ok);
-    }
+    input.classList.toggle('is-invalid', !ok);
     errorNode.hidden = ok;
     return ok;
   }
@@ -248,8 +245,8 @@
   function resetForm() {
     dom.form.reset();
     dom.cantidad.value = '1';
-    dom.form.querySelectorAll('.field').forEach(function (field) {
-      field.classList.remove('is-invalid');
+    dom.form.querySelectorAll('.is-invalid').forEach(function (input) {
+      input.classList.remove('is-invalid');
     });
     dom.errorCliente.hidden = true;
     dom.errorProducto.hidden = true;
@@ -259,7 +256,6 @@
 
   function setFormBusy(busy) {
     dom.submitBtn.disabled = busy;
-    dom.submitBtn.classList.toggle('is-busy', busy);
     var label = dom.submitBtn.querySelector('.btn__label');
     if (label) {
       label.textContent = busy ? 'Guardando…' : 'Guardar pedido';
@@ -617,24 +613,23 @@
 
   function buildRecord(record) {
     var node = doc.createElement('article');
-    node.className = 'record';
+    node.className = 'record list-group-item px-0 py-3';
     node.setAttribute('data-id', String(record.id));
 
-    var head = doc.createElement('div');
-    head.className = 'record__head';
+    var head = el(
+      'div',
+      'record__head d-flex flex-wrap justify-content-between align-items-baseline gap-2'
+    );
 
-    var status = doc.createElement('span');
-    status.className = 'record__state record__state--' + record.status;
-    var dot = doc.createElement('span');
-    dot.className = 'dot';
-    dot.setAttribute('aria-hidden', 'true');
-    status.appendChild(dot);
-    status.appendChild(doc.createTextNode(STATUS_LABEL[record.status] || record.status));
+    var status = el(
+      'span',
+      'badge rounded-pill status-badge status-badge--' + record.status,
+      STATUS_LABEL[record.status] || record.status
+    );
     head.appendChild(status);
 
-    var aside = doc.createElement('span');
-    aside.className = 'record__aside';
-    aside.appendChild(el('span', 'record__id', '#' + record.id));
+    var aside = el('span', 'record__aside small text-body-secondary');
+    aside.appendChild(el('span', 'record__id font-monospace', '#' + record.id));
     aside.appendChild(doc.createTextNode(' · '));
     var time = doc.createElement('time');
     time.dateTime = record.createdAt;
@@ -644,35 +639,49 @@
     node.appendChild(head);
 
     var payload = record.payload || {};
-    node.appendChild(el('h3', 'record__client', payload.cliente || 'Cliente sin nombre'));
     node.appendChild(
-      el('p', 'record__line', (payload.producto || 'Producto') + ' × ' + (payload.cantidad || 1))
+      el('h3', 'record__client h6 mt-2 mb-1', payload.cliente || 'Cliente sin nombre')
+    );
+    node.appendChild(
+      el(
+        'p',
+        'record__line small text-body-secondary mb-1',
+        (payload.producto || 'Producto') + ' × ' + (payload.cantidad || 1)
+      )
     );
 
     if (payload.notas) {
-      node.appendChild(el('p', 'record__note', payload.notas));
+      node.appendChild(el('p', 'record__note fst-italic mb-1', payload.notas));
     }
 
     if (record.lastError) {
-      node.appendChild(el('p', 'record__error', record.lastError));
+      node.appendChild(
+        el('p', 'record__error alert alert-danger py-1 px-2 small mt-2 mb-0', record.lastError)
+      );
     }
 
-    var footer = doc.createElement('div');
-    footer.className = 'record__foot';
+    var footer = el(
+      'div',
+      'record__foot d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2'
+    );
     footer.appendChild(
       el(
         'span',
-        'record__meta',
+        'record__meta font-monospace',
         record.attempts + '/' + cfg.MAX_ATTEMPTS + ' intentos · ' +
           String(record.clientId || '').slice(0, 8)
       )
     );
 
-    var actions = doc.createElement('div');
-    actions.className = 'record__actions';
+    var actions = el('div', 'record__actions d-flex gap-3');
 
     if (record.status === 'pendiente' || record.status === 'error') {
-      var retryButton = actionButton('retry', record.id, 'Reintentar', 'text-button');
+      var retryButton = actionButton(
+        'retry',
+        record.id,
+        'Reintentar',
+        'btn btn-link btn-sm p-0 text-decoration-none'
+      );
       retryButton.setAttribute(
         'aria-label',
         'Reintentar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente')
@@ -680,7 +689,12 @@
       actions.appendChild(retryButton);
     }
 
-    var deleteButton = actionButton('delete', record.id, 'Eliminar', 'text-button text-button--danger');
+    var deleteButton = actionButton(
+      'delete',
+      record.id,
+      'Eliminar',
+      'btn btn-link btn-sm p-0 text-decoration-none text-danger'
+    );
     deleteButton.setAttribute(
       'aria-label',
       'Eliminar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente')
@@ -691,9 +705,11 @@
     node.appendChild(footer);
 
     var details = doc.createElement('details');
-    details.className = 'record__details';
-    details.appendChild(el('summary', null, 'Detalles'));
-    details.appendChild(el('pre', null, JSON.stringify(record, null, 2)));
+    details.className = 'record__details mt-2';
+    details.appendChild(el('summary', 'small', 'Detalles'));
+    details.appendChild(
+      el('pre', 'bg-body-tertiary border rounded p-2 mt-2 mb-0', JSON.stringify(record, null, 2))
+    );
     node.appendChild(details);
 
     return node;
@@ -919,14 +935,14 @@
   }
 
   function toast(message, tone) {
-    var node = el('div', 'toast toast--' + (tone || 'info'));
+    var node = el('div', 'app-toast app-toast--' + (tone || 'info'));
     node.setAttribute('role', 'status');
-    node.appendChild(el('span', 'toast__dot'));
-    node.appendChild(el('span', 'toast__text', message));
+    node.appendChild(el('span', 'app-toast__dot'));
+    node.appendChild(el('span', 'app-toast__text', message));
     dom.toasts.appendChild(node);
 
     global.setTimeout(function () {
-      node.classList.add('toast--out');
+      node.classList.add('app-toast--out');
       global.setTimeout(function () {
         if (node.parentNode) {
           node.parentNode.removeChild(node);

@@ -182,6 +182,8 @@ Si llega un evento `sync` y, casi al mismo tiempo, un `FLUSH_OUTBOX`, el segundo
 
 Porque la consigna lo prohíbe y porque el objetivo es demostrar el dominio de la API nativa: `indexedDB.open`, `onupgradeneeded`, transacciones, índices, `sync`, `clients.matchAll` y `postMessage`. El wrapper propio hace visible esa mecánica.
 
+Bootstrap 5.3 se incluye solo como hoja de estilos local (`vendor/bootstrap.min.css`): no aporta nada de lógica ni JavaScript. La persistencia, la cola y la sincronización siguen escritas a mano con APIs nativas.
+
 ---
 
 ## Trampas que debes evitar en la defensa

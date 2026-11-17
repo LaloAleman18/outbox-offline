@@ -11,11 +11,12 @@ importScripts(
   './js/api.js'
 );
 
-var CACHE_NAME = 'outbox-shell-v8';
+var CACHE_NAME = 'outbox-shell-v10';
 var INDEX_URL = new URL('./index.html', self.location.href).href;
 var SHELL_ASSETS = [
   './index.html',
   './styles.css',
+  './vendor/bootstrap.min.css',
   './manifest.json',
   './icons/icon.svg',
   './js/config.js',
