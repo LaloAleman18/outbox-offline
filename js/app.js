@@ -525,7 +525,7 @@
   /* ---------- Estado visual ---------- */
 
   function setPill(node, textNode, kind, text) {
-    node.className = 'pill pill--' + kind;
+    node.className = 'statusline statusline--' + kind;
     textNode.textContent = text;
   }
 
@@ -565,7 +565,7 @@
     dom.syncState.classList.toggle('is-syncing', state.syncing);
     dom.syncState.textContent = state.syncing ? 'Sincronizando…' : 'En espera';
     dom.btnSync.disabled = state.syncing;
-    dom.btnSync.textContent = state.syncing ? 'Sincronizando…' : 'Sincronizar ahora';
+    dom.btnSync.textContent = state.syncing ? 'Sincronizando…' : 'Sincronizar';
   }
 
   function renderStats(rows) {
@@ -617,64 +617,74 @@
 
   function buildRecord(record) {
     var node = doc.createElement('article');
-    node.className = 'record record--' + record.status;
+    node.className = 'record';
     node.setAttribute('data-id', String(record.id));
 
-    var top = doc.createElement('div');
-    top.className = 'record__top';
+    var head = doc.createElement('div');
+    head.className = 'record__head';
 
     var status = doc.createElement('span');
-    status.className = 'status status--' + record.status;
+    status.className = 'record__state record__state--' + record.status;
     var dot = doc.createElement('span');
-    dot.className = 'status__dot';
+    dot.className = 'dot';
     dot.setAttribute('aria-hidden', 'true');
     status.appendChild(dot);
     status.appendChild(doc.createTextNode(STATUS_LABEL[record.status] || record.status));
-    top.appendChild(status);
+    head.appendChild(status);
 
-    top.appendChild(el('span', 'record__id', '#' + record.id));
-
+    var aside = doc.createElement('span');
+    aside.className = 'record__aside';
+    aside.appendChild(el('span', 'record__id', '#' + record.id));
+    aside.appendChild(doc.createTextNode(' · '));
     var time = doc.createElement('time');
-    time.className = 'record__time';
     time.dateTime = record.createdAt;
     time.textContent = formatDate(record.createdAt);
-    top.appendChild(time);
-    node.appendChild(top);
+    aside.appendChild(time);
+    head.appendChild(aside);
+    node.appendChild(head);
 
     var payload = record.payload || {};
-    node.appendChild(el('h3', 'record__title', payload.cliente || 'Cliente sin nombre'));
+    node.appendChild(el('h3', 'record__client', payload.cliente || 'Cliente sin nombre'));
     node.appendChild(
-      el(
-        'p',
-        'record__meta',
-        (payload.producto || 'Producto') + ' · ' + (payload.cantidad || 1) + ' unidad(es)'
-      )
+      el('p', 'record__line', (payload.producto || 'Producto') + ' × ' + (payload.cantidad || 1))
     );
 
     if (payload.notas) {
-      node.appendChild(el('p', 'record__notes', '“' + payload.notas + '”'));
+      node.appendChild(el('p', 'record__note', payload.notas));
     }
 
     if (record.lastError) {
-      node.appendChild(el('p', 'record__error', 'Último error: ' + record.lastError));
+      node.appendChild(el('p', 'record__error', record.lastError));
     }
 
     var footer = doc.createElement('div');
-    footer.className = 'record__footer';
-    footer.appendChild(el('span', 'record__attempts', 'Intentos: ' + record.attempts + '/' + cfg.MAX_ATTEMPTS));
-    footer.appendChild(el('span', 'record__client', String(record.clientId || '').slice(0, 8) + '…'));
+    footer.className = 'record__foot';
+    footer.appendChild(
+      el(
+        'span',
+        'record__meta',
+        record.attempts + '/' + cfg.MAX_ATTEMPTS + ' intentos · ' +
+          String(record.clientId || '').slice(0, 8)
+      )
+    );
 
     var actions = doc.createElement('div');
     actions.className = 'record__actions';
 
     if (record.status === 'pendiente' || record.status === 'error') {
-      var retryButton = actionButton('retry', record.id, 'Reintentar', 'btn btn--ghost btn--sm');
-      retryButton.setAttribute('aria-label', 'Reintentar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente'));
+      var retryButton = actionButton('retry', record.id, 'Reintentar', 'text-button');
+      retryButton.setAttribute(
+        'aria-label',
+        'Reintentar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente')
+      );
       actions.appendChild(retryButton);
     }
 
-    var deleteButton = actionButton('delete', record.id, 'Eliminar', 'btn btn--ghost btn--sm btn--danger');
-    deleteButton.setAttribute('aria-label', 'Eliminar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente'));
+    var deleteButton = actionButton('delete', record.id, 'Eliminar', 'text-button text-button--danger');
+    deleteButton.setAttribute(
+      'aria-label',
+      'Eliminar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente')
+    );
     actions.appendChild(deleteButton);
 
     footer.appendChild(actions);
@@ -682,7 +692,7 @@
 
     var details = doc.createElement('details');
     details.className = 'record__details';
-    details.appendChild(el('summary', null, 'Ver payload y respuesta'));
+    details.appendChild(el('summary', null, 'Detalles'));
     details.appendChild(el('pre', null, JSON.stringify(record, null, 2)));
     node.appendChild(details);
 
