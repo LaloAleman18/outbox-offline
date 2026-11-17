@@ -521,7 +521,7 @@
   /* ---------- Estado visual ---------- */
 
   function setPill(node, textNode, kind, text) {
-    node.className = 'statusline statusline--' + kind;
+    node.className = 'status-chip status-chip--' + kind;
     textNode.textContent = text;
   }
 
@@ -612,24 +612,20 @@
   }
 
   function buildRecord(record) {
-    var node = doc.createElement('article');
-    node.className = 'record list-group-item px-0 py-3';
+    var node = el('article', 'order order--' + record.status);
     node.setAttribute('data-id', String(record.id));
 
-    var head = el(
-      'div',
-      'record__head d-flex flex-wrap justify-content-between align-items-baseline gap-2'
-    );
+    var head = el('div', 'order__head');
 
     var status = el(
       'span',
-      'badge rounded-pill status-badge status-badge--' + record.status,
+      'status-tag status-tag--' + record.status,
       STATUS_LABEL[record.status] || record.status
     );
     head.appendChild(status);
 
-    var aside = el('span', 'record__aside small text-body-secondary');
-    aside.appendChild(el('span', 'record__id font-monospace', '#' + record.id));
+    var aside = el('span', 'order__aside');
+    aside.appendChild(el('span', 'order__id', '#' + record.id));
     aside.appendChild(doc.createTextNode(' · '));
     var time = doc.createElement('time');
     time.dateTime = record.createdAt;
@@ -639,49 +635,37 @@
     node.appendChild(head);
 
     var payload = record.payload || {};
-    node.appendChild(
-      el('h3', 'record__client h6 mt-2 mb-1', payload.cliente || 'Cliente sin nombre')
-    );
+    node.appendChild(el('h3', 'order__client', payload.cliente || 'Cliente sin nombre'));
     node.appendChild(
       el(
         'p',
-        'record__line small text-body-secondary mb-1',
+        'order__line',
         (payload.producto || 'Producto') + ' × ' + (payload.cantidad || 1)
       )
     );
 
     if (payload.notas) {
-      node.appendChild(el('p', 'record__note fst-italic mb-1', payload.notas));
+      node.appendChild(el('p', 'order__note', payload.notas));
     }
 
     if (record.lastError) {
-      node.appendChild(
-        el('p', 'record__error alert alert-danger py-1 px-2 small mt-2 mb-0', record.lastError)
-      );
+      node.appendChild(el('p', 'order__error', record.lastError));
     }
 
-    var footer = el(
-      'div',
-      'record__foot d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2'
-    );
+    var footer = el('div', 'order__foot');
     footer.appendChild(
       el(
         'span',
-        'record__meta font-monospace',
+        'order__meta',
         record.attempts + '/' + cfg.MAX_ATTEMPTS + ' intentos · ' +
           String(record.clientId || '').slice(0, 8)
       )
     );
 
-    var actions = el('div', 'record__actions d-flex gap-3');
+    var actions = el('div', 'order__actions');
 
     if (record.status === 'pendiente' || record.status === 'error') {
-      var retryButton = actionButton(
-        'retry',
-        record.id,
-        'Reintentar',
-        'btn btn-link btn-sm p-0 text-decoration-none'
-      );
+      var retryButton = actionButton('retry', record.id, 'Reintentar', 'link-btn');
       retryButton.setAttribute(
         'aria-label',
         'Reintentar pedido #' + record.id + ' de ' + (payload.cliente || 'cliente')
@@ -693,7 +677,7 @@
       'delete',
       record.id,
       'Eliminar',
-      'btn btn-link btn-sm p-0 text-decoration-none text-danger'
+      'link-btn link-btn--danger'
     );
     deleteButton.setAttribute(
       'aria-label',
@@ -705,11 +689,9 @@
     node.appendChild(footer);
 
     var details = doc.createElement('details');
-    details.className = 'record__details mt-2';
-    details.appendChild(el('summary', 'small', 'Detalles'));
-    details.appendChild(
-      el('pre', 'bg-body-tertiary border rounded p-2 mt-2 mb-0', JSON.stringify(record, null, 2))
-    );
+    details.className = 'order__details';
+    details.appendChild(el('summary', null, 'Detalles'));
+    details.appendChild(el('pre', null, JSON.stringify(record, null, 2)));
     node.appendChild(details);
 
     return node;
