@@ -8,8 +8,10 @@ Aplicación académica de **persistencia offline** con IndexedDB, **patrón Outb
 
 ## Demo
 
-- **GitHub Pages:** `https://TU-USUARIO.github.io/TU-REPO/` _(reemplaza este texto después de publicar)_
-- **Repositorio:** `https://github.com/TU-USUARIO/TU-REPO`
+- **GitHub Pages:** [https://laloaleman18.github.io/outbox-offline/](https://laloaleman18.github.io/outbox-offline/)
+- **Repositorio:** [https://github.com/LaloAleman18/outbox-offline](https://github.com/LaloAleman18/outbox-offline)
+
+> En GitHub Pages la API apunta a un endpoint público de prueba (`jsonplaceholder.typicode.com`). Para la demo completa con la API local, ejecuta el servidor de `tools/server.js` descrito más abajo.
 
 ### Qué demuestra
 
@@ -91,7 +93,7 @@ git init
 git add .
 git commit -m "Outbox offline con IndexedDB y Background Sync"
 git branch -M main
-git remote add origin https://github.com/TU-USUARIO/TU-REPO.git
+git remote add origin https://github.com/LaloAleman18/outbox-offline.git
 git push -u origin main
 ```
 
@@ -101,7 +103,7 @@ Luego, en GitHub:
 2. **Source:** *Deploy from a branch*.
 3. **Branch:** `main` · **Folder:** `/ (root)`.
 4. Guarda y espera el despliegue.
-5. Abre `https://TU-USUARIO.github.io/TU-REPO/`.
+5. Abre `https://laloaleman18.github.io/outbox-offline/`.
 
 ### Por qué no hay errores 404 en el subdirectorio
 
