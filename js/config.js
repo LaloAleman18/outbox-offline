@@ -14,7 +14,7 @@
 
     SYNC_TAG: 'outbox-sync',
     MAX_ATTEMPTS: 5,
-    REQUEST_TIMEOUT_MS: 8000,
+    REQUEST_TIMEOUT_MS: 15000,
 
     /* En local se usa el mock incluido en tools/server.js.
        En GitHub Pages se usa una API pública que acepta POST (JSONPlaceholder).
