@@ -52,7 +52,20 @@
         return withTimeout(
           global.fetch(url || cfg().API_URL, options),
           cfg().REQUEST_TIMEOUT_MS
-        );
+        ).catch(function (error) {
+          /* fetch rechaza con TypeError si el servidor no responde o no hay red. */
+          if (error && error.name === 'TypeError') {
+            var target = url || cfg().API_URL;
+            var isLocalApi = target.indexOf('localhost') > -1 || target.indexOf('127.0.0.1') > -1;
+            throw new Error(
+              'No se pudo conectar con la API.' +
+                (isLocalApi
+                  ? ' Arranca el mock con: node tools/server.js'
+                  : ' Revisa tu conexión a internet.')
+            );
+          }
+          throw error;
+        });
       })
       .then(function (response) {
         if (!response.ok) {

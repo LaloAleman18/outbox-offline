@@ -241,6 +241,7 @@ Para conectar tu propio backend, cambia `API_URL` por tu endpoint HTTPS con CORS
 | El SW no se registra | Abriste `index.html` con `file://` | Usa `http://localhost` o GitHub Pages. |
 | 404 en CSS/JS | Ruta absoluta (`/styles.css`) | Usa rutas relativas (`./styles.css`). |
 | “Background Sync is disabled” | Navegador o contexto sin SyncManager | Es normal: la app cae al canal `postMessage`. |
+| “Failed to fetch” en `localhost` | El mock de la API no está corriendo en el puerto 8765 | Ejecuta `node tools/server.js` y deja esa terminal abierta. |
 | El POST falla siempre en Pages | JSONPlaceholder caído o bloqueado | Cambia `API_URL` o usa el mock local. |
 | La cola no se actualiza | El SW quedó en una versión vieja | DevTools → Application → Service Workers → *Update*. |
 | Quiero empezar de cero | Datos de pruebas | DevTools → Application → IndexedDB → elimina `outbox-db`. |

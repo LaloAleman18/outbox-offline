@@ -11,7 +11,7 @@ importScripts(
   './js/api.js'
 );
 
-var CACHE_NAME = 'outbox-shell-v12';
+var CACHE_NAME = 'outbox-shell-v13';
 var INDEX_URL = new URL('./index.html', self.location.href).href;
 var SHELL_ASSETS = [
   './index.html',
